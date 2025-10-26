@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development of Method and Platform for Detection of Android Malware</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --dark-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 120px 2rem 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"%3E%3Cdefs%3E%3ClinearGradient id="grad1" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:rgba(37,99,235,0.4);stop-opacity:1" /%3E%3Cstop offset="100%25" style="stop-color:rgba(59,130,246,0.4);stop-opacity:1" /%3E%3C/linearGradient%3E%3C/defs%3E%3Cg opacity="0.4"%3E%3C!-- Network nodes and connections --%3E%3Ccircle cx="200" cy="150" r="40" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/%3E%3Ccircle cx="400" cy="200" r="50" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/%3E%3Ccircle cx="600" cy="150" r="45" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/%3E%3Ccircle cx="800" cy="250" r="40" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/%3E%3Ccircle cx="1000" cy="180" r="50" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/%3E%3C!-- Connections --%3E%3Cline x1="200" y1="150" x2="400" y2="200" stroke="rgba(255,255,255,0.2)" stroke-width="2"/%3E%3Cline x1="400" y1="200" x2="600" y2="150" stroke="rgba(255,255,255,0.2)" stroke-width="2"/%3E%3Cline x1="600" y1="150" x2="800" y2="250" stroke="rgba(255,255,255,0.2)" stroke-width="2"/%3E%3Cline x1="800" y1="250" x2="1000" y2="180" stroke="rgba(255,255,255,0.2)" stroke-width="2"/%3E%3C!-- Android robot outline --%3E%3Cg transform="translate(900, 400)"%3E%3Crect x="0" y="30" width="80" height="90" rx="10" fill="rgba(255,255,255,0.1)"/%3E%3Ccircle cx="40" cy="15" r="15" fill="rgba(255,255,255,0.1)"/%3E%3Crect x="-10" y="50" width="15" height="40" rx="5" fill="rgba(255,255,255,0.08)"/%3E%3Crect x="75" y="50" width="15" height="40" rx="5" fill="rgba(255,255,255,0.08)"/%3E%3C/g%3E%3C!-- Shield icon --%3E%3Cpath d="M100,400 L100,500 Q100,520 120,520 L180,520 Q200,520 200,500 L200,400 Z" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/%3E%3Cpath d="M120,450 L140,470 L180,420" stroke="rgba(59,130,246,0.5)" stroke-width="3" fill="none"/%3E%3C/g%3E%3C/svg%3E');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease;
+            line-height: 1.3;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .project-code {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        section {
+            padding: 80px 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: #ffd3a3; /*var(--card-bg);*/
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        .feature-card:nth-child(1)::before {
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"%3E%3Cg opacity="0.4"%3E%3Ccircle cx="150" cy="80" r="30" fill="rgba(37,99,235,0.4)"/%3E%3Ccircle cx="80" cy="150" r="25" fill="rgba(37,99,235,0.3)"/%3E%3Ccircle cx="220" cy="150" r="25" fill="rgba(37,99,235,0.3)"/%3E%3Ccircle cx="150" cy="220" r="30" fill="rgba(37,99,235,0.4)"/%3E%3Cline x1="150" y1="80" x2="80" y2="150" stroke="rgba(37,99,235,0.3)" stroke-width="2"/%3E%3Cline x1="150" y1="80" x2="220" y2="150" stroke="rgba(37,99,235,0.3)" stroke-width="2"/%3E%3Cline x1="80" y1="150" x2="150" y2="220" stroke="rgba(37,99,235,0.3)" stroke-width="2"/%3E%3Cline x1="220" y1="150" x2="150" y2="220" stroke="rgba(37,99,235,0.3)" stroke-width="2"/%3E%3Crect x="40" y="40" width="40" height="50" rx="5" fill="rgba(37,99,235,0.2)"/%3E%3Crect x="220" y="40" width="40" height="50" rx="5" fill="rgba(37,99,235,0.2)"/%3E%3C/g%3E%3C/svg%3E') no-repeat center;
+            background-size: contain;
+        }
+
+        .feature-card:nth-child(2)::before {
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"%3E%3Cg opacity="0.4"%3E%3C!-- Neural network layers --%3E%3Ccircle cx="50" cy="80" r="15" fill="rgba(37,99,235,0.4)"/%3E%3Ccircle cx="50" cy="150" r="15" fill="rgba(37,99,235,0.4)"/%3E%3Ccircle cx="50" cy="220" r="15" fill="rgba(37,99,235,0.4)"/%3E%3Ccircle cx="150" cy="60" r="15" fill="rgba(37,99,235,0.3)"/%3E%3Ccircle cx="150" cy="120" r="15" fill="rgba(37,99,235,0.3)"/%3E%3Ccircle cx="150" cy="180" r="15" fill="rgba(37,99,235,0.3)"/%3E%3Ccircle cx="150" cy="240" r="15" fill="rgba(37,99,235,0.3)"/%3E%3Ccircle cx="250" cy="100" r="15" fill="rgba(37,99,235,0.4)"/%3E%3Ccircle cx="250" cy="180" r="15" fill="rgba(37,99,235,0.4)"/%3E%3C!-- Connections --%3E%3Cline x1="65" y1="80" x2="135" y2="60" stroke="rgba(37,99,235,0.2)" stroke-width="1.5"/%3E%3Cline x1="65" y1="80" x2="135" y2="120" stroke="rgba(37,99,235,0.2)" stroke-width="1.5"/%3E%3Cline x1="65" y1="150" x2="135" y2="120" stroke="rgba(37,99,235,0.2)" stroke-width="1.5"/%3E%3Cline x1="65" y1="150" x2="135" y2="180" stroke="rgba(37,99,235,0.2)" stroke-width="1.5"/%3E%3Cline x1="165" y1="120" x2="235" y2="100" stroke="rgba(37,99,235,0.2)" stroke-width="1.5"/%3E%3Cline x1="165" y1="180" x2="235" y2="180" stroke="rgba(37,99,235,0.2)" stroke-width="1.5"/%3E%3C/g%3E%3C/svg%3E') no-repeat center;
+            background-size: contain;
+        }
+
+        .feature-card:nth-child(3)::before {
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"%3E%3Cg opacity="0.4"%3E%3C!-- Cloud shape --%3E%3Cellipse cx="150" cy="120" rx="80" ry="50" fill="rgba(37,99,235,0.3)"/%3E%3Cellipse cx="110" cy="130" rx="50" ry="35" fill="rgba(37,99,235,0.3)"/%3E%3Cellipse cx="190" cy="130" rx="50" ry="35" fill="rgba(37,99,235,0.3)"/%3E%3C!-- Mobile device --%3E%3Crect x="100" y="180" width="100" height="80" rx="10" fill="rgba(37,99,235,0.2)" stroke="rgba(37,99,235,0.4)" stroke-width="2"/%3E%3Crect x="110" y="190" width="80" height="50" rx="3" fill="rgba(255,255,255,0.1)"/%3E%3C!-- Connection line --%3E%3Cline x1="150" y1="170" x2="150" y2="180" stroke="rgba(37,99,235,0.4)" stroke-width="2" stroke-dasharray="5,5"/%3E%3C/g%3E%3C/svg%3E') no-repeat center;
+            background-size: contain;
+        }
+
+        .feature-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .publications {
+            background: var(--light-bg);
+        }
+
+        .publication-item {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .publication-item h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .publication-item .authors {
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .publication-item .venue {
+            color: var(--text-dark);
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.7rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+            margin-top: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .dataset-controls {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .dataset-controls input,
+        .dataset-controls select {
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .dataset-controls input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .dataset-info {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--secondary-color);
+        }
+
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .download-section {
+            background: #f0f9ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .download-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(37,99,235,0.4);
+        }
+
+        .download-btn::before {
+            content: "⬇ ";
+            font-size: 1.2rem;
+        }
+
+        .terms-text {
+            /*background: white;*/
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            color: var(--text-dark);
+            line-height: 1.8;
+            /*border-left: 4px solid var(--primary-color);*/
+        }
+
+        .terms-text h4 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .terms-text ul {
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto;
+            list-style-position: inside;
+        }
+
+        .terms-text li {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+        }
+
+        .terms-text strong {
+            color: var(--primary-color);
+        }
+
+        .dataset-table {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dataset-table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th:hover {
+            background: var(--secondary-color);
+        }
+
+        th .sort-indicator {
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: var(--light-bg);
+        }
+
+        .team {
+            background: var(--light-bg);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .team-member {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+
+        .team-member img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 4px solid var(--accent-color);
+        }
+
+        .team-member h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .team-member .role {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .team-member .links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .team-member .links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .contact {
+            text-align: center;
+        }
+
+        .contact-info {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-info p {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(37,99,235,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -50px;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transform: rotate(8deg) scale(1.2);
+            opacity: 0.3;
+            transition: transform 0.5s, opacity 0.5s;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, 
+                var(--primary-color) 0%, 
+                rgba(37,99,235,0.8) 40%, 
+                rgba(37,99,235,0.3) 100%);
+            z-index: 1;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=400&fit=crop');
+        }
+
+        .stat-card:nth-child(2)::before {
+            background-image: url('https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&h=400&fit=crop');
+        }
+
+        .stat-card:nth-child(3)::before {
+            background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=400&fit=crop');
+        }
+
+        .stat-card:nth-child(4)::before {
+            background-image: url('https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=400&fit=crop');
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(37,99,235,0.4);
+        }
+
+        .stat-card:hover::before {
+            transform: rotate(8deg) scale(1.3);
+            opacity: 0.5;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            section {
+                padding: 60px 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo">AndroMesh Project</a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#publications">Publications</a></li>
+                <li><a href="#dataset">Dataset</a></li>
+                <li><a href="#team">Team</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Development of Method and Platform for Detection of Android Malware Using Deep Image and Graph Representations</h1>
+            <p class="subtitle">A Novel Multi-Modal Approach Combining Computer Vision and Graph Neural Networks</p>
+            <div class="project-code">TÜBİTAK 1001 Program - Project Code: 124E510</div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">About the Project - Targets</h2>
+        <p style="text-align: center; max-width: 800px; margin: 0 auto 2rem; color: var(--text-light); font-size: 1.1rem;">
+            This project develops an innovative deep learning model that processes both byte images and function call graphs from Android APK files. Our approach combines the strengths of static image analysis with graph-based behavioral patterns to achieve superior malware detection accuracy.
+        </p>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">95% +</div>
+                <div class="stat-label">Detection Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">294 Families</div>
+                <div class="stat-label">A New Large Scale Malware Dataset</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">< 10 Seconds</div>
+                <div class="stat-label">Detection Speed</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🔬</div>
+                <h3>Multi-Modal Architecture</h3>
+                <p>First-of-its-kind neural network architecture that jointly processes byte images and function call graphs from Android APK files, enabling comprehensive malware analysis through combined static representations.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>Benchmarking Datasets</h3>
+                <p>Offers distinct malware detection datasets that cover DEX images and PyTorch-ready graph H5 files. These datasets are intended for academic studies involving single-modal and multimodal computer vision models, as well as graph neural networks.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3>Cloud-Based Platform</h3>
+                <p>Deployed on Google Vertex AI with MLOps practices, offering a free mobile application for users to scan suspicious APK files in real-time, making advanced malware detection accessible to everyone.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="publications" class="publications">
+        <h2 class="section-title">Publications</h2>
+        
+        <div class="publication-item">
+            <h3>AndroMesh: Android Malware Detection Using Graph Neural Networks with Function-Aware Local-Global Topology</h3>
+            <p class="authors">Alpay Tekin, Ahmet Selman Bozkır, Murat Aydos</p>
+            <p class="venue">The 10th International Conference on Computer Science and Computational Intelligence 2025 (to be published in Procedia Computer Science)</p>
+            <a href="#" class="btn">PDF (Coming Soon)</a>
+        </div>
+
+        <div class="publication-item">
+            <h3>A New Multimodal Android Malware Detection Approach Combining Graph Structures and Image Embeddings</h3>
+            <p class="authors">Alpay Tekin</p>
+            <p class="venue">Master of Science Thesis, Hacettepe University, 2025</p>
+            <a href="#" class="btn">PDF (Coming Soon)</a>
+        </div>
+    </section>
+
+    <section id="dataset">
+        <h2 class="section-title">Malnet-Medium Dataset</h2>
+        <p style="text-align: center; max-width: 800px; margin: 0 auto 2rem; color: var(--text-light);">
+            Our curated dataset extends the original Malnet with benign samples, containing 95,670 total samples across 294 malware families and benign applications. All samples are split into training (70%), validation (10%), and test (20%) sets. We offer DEX images their H5 Pytorch-ready graph counterparts for new academic studies. If you want to access the original APK files, you need to contact with us for this kind of exclusive use. 
+        </p>
+
+        <div class="dataset-controls">
+            <input type="text" id="searchInput" placeholder="Search by type or family...">
+            <select id="typeFilter">
+                <option value="">All Types</option>
+            </select>
+            <button class="btn" onclick="resetFilters()">Reset Filters</button>
+        </div>
+
+        <div class="dataset-info">
+            <div>
+                <strong>Showing:</strong> <span id="showingInfo">0-0 of 0</span>
+            </div>
+            <div class="pagination">
+                <button onclick="changePage(-1)" id="prevBtn">← Previous</button>
+                <span>Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                <button onclick="changePage(1)" id="nextBtn">Next →</button>
+                <select id="rowsPerPage" onchange="changeRowsPerPage()">
+                    <option value="25">25 rows</option>
+                    <option value="50">50 rows</option>
+                    <option value="100" selected>100 rows</option>
+                    <option value="all">All rows</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="dataset-table-container">
+            <div class="dataset-table">
+                <table id="datasetTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Type <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(1)">Family <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(2)">Total Samples <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(3)">Train <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(4)">Val <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(5)">Test <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(6)">Train % <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(7)">Val % <span class="sort-indicator"></span></th>
+                            <th onclick="sortTable(8)">Test % <span class="sort-indicator"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="download-section">
+            <h3>Download Dataset</h3>
+            <a href="#" class="download-btn" onclick="alert('Please contact the research team for dataset access'); return false;">Download Malware Medium Dataset</a>
+            
+            <div class="terms-text">
+                <h4>📋 Academic Use Terms & Conditions</h4>
+                <ul>
+                    <li><strong>Academic Use Only:</strong> This dataset is provided exclusively for academic research and educational purposes.</li>
+                    <li><strong>Citation Required:</strong> If you use this dataset in your research, you must cite the original publication and acknowledge the AndroMesh Project.</li>
+                    <li><strong>No Commercial Use:</strong> Commercial use, redistribution, or sale of this dataset is strictly prohibited without prior written consent.</li>
+                    <li><strong>Ethical Use:</strong> The dataset must not be used for malicious purposes or to develop harmful malware.</li>
+                    <li><strong>Data Privacy:</strong> Users must comply with all applicable data protection and privacy laws.</li>
+                    <li><strong>No Warranty:</strong> The dataset is provided "as is" without any warranties of any kind.</li>
+                </ul>
+                <p style="margin-top: 1rem; font-style: italic;">
+                    By downloading this dataset, you agree to abide by these terms and conditions. 
+                    For questions or collaboration opportunities, please contact the research team.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="team" class="team">
+        <h2 class="section-title">Research Team</h2>
+        <div class="team-grid">
+            <div class="team-member">
+                <img src="https://cs.hacettepe.edu.tr/images/staff/31.jpg" alt="Dr. Ahmet Selman Bozkır">
+                <h3>Dr. Ahmet Selman Bozkır</h3>
+                <p class="role">Principal Investigator</p>
+                <p>Assistant Professor<br>Hacettepe University<br>Department of Computer Engineering</p>
+                <div class="links">
+                    <a href="mailto:selman@cs.hacettepe.edu.tr">📧 Email</a>
+                    <a href="https://wwww.ahmetselman.com" target="_blank">🔗 Homepage</a>
+                </div>
+            </div>
+
+            <div class="team-member">
+                <img src="https://cs.hacettepe.edu.tr/images/staff/55.jpg" alt="Dr. Murat Aydos">
+                <h3>Dr. Murat Aydos</h3>
+                <p class="role">Researcher</p>
+                <p>Associate Professor<br>Hacettepe University<br>Informatics Institute</p>
+                <div class="links">
+                    <a href="mailto:aydos@hacettepe.edu.tr">📧 Email</a>
+                    <a href="https://web.cs.hacettepe.edu.tr/~maydos/" target="_blank">🔗 Homepage</a>
+                </div>
+            </div>
+
+            <div class="team-member">
+                <img src="https://cs.hacettepe.edu.tr/images/staff/at.jpg" alt="Alpay Tekin">
+                <h3>Alpay Tekin</h3>
+                <p class="role">Graduate Research Assistant</p>
+                <p>Ph.D. Student<br>Hacettepe University<br>Department of Computer Engineering</p>
+                <div class="links">
+                    <a href="mailto:alpay.tekin@cs.hacettepe.edu.tr">📧 Email</a>
+                    <a href="#" target="_blank">🔗 Homepage</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <h2 class="section-title">Contact</h2>
+        <div class="contact-info">
+            <h3>Department of Computer Engineering</h3>
+            <p><strong>Hacettepe University</strong></p>
+            <p>Beytepe Campus<br>
+            06800 Çankaya, Ankara<br>
+            Turkey</p>
+           <!-- <p>📧 <a href="mailto:selman@cs.hacettepe.edu.tr" style="color: var(--primary-color); text-decoration: none;">selman@cs.hacettepe.edu.tr</a></p>
+            <p>🌐 <a href="https://web.cs.hacettepe.edu.tr/~selman/" target="_blank" style="color: var(--primary-color); text-decoration: none;">Lab Website</a></p>-->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Android Malware Detection Project - Hacettepe University</p>
+        <p style="margin-top: 0.5rem; opacity: 0.8;">Supported by TÜBİTAK 1001 Program (Project Code: 124E510)</p>
+    </footer>
+
+    <script>
+        // Complete dataset - ALL ROWS FROM CSV
+        const datasetCSV = `type,family,total_samples,train_samples,val_samples,test_samples,train_percentage,val_percentage,test_percentage
+benign,benign,27800,19460,2780,5560,70,10,20
+spyware,dowgin,3850,2678,387,785,69.55844156,10.05194805,20.38961039
+exploit,cve,3840,2664,399,777,69.375,10.390625,20.234375
+clicker++trojan,dowgin,2700,1890,270,540,70,10,20
+downloader,jiagu,2170,1513,200,457,69.7235023,9.216589862,21.05990783
+smssend,igexin,2110,1493,215,402,70.75829384,10.18957346,19.0521327
+downloader,openconnection,1820,1269,182,369,69.72527473,10,20.27472527
+spyware,kuguo,1410,988,153,269,70.07092199,10.85106383,19.07801418
+monitor,artemis,1030,728,101,201,70.67961165,9.805825243,19.51456311
+banker++trojan,asacub,750,525,73,152,70,9.733333333,20.26666667
+exploit,loopb,730,515,60,155,70.54794521,8.219178082,21.23287671
+adsware,admobads,650,471,59,120,72.46153846,9.076923077,18.46153846
+malware++trj,awnu,600,420,60,120,70,10,20
+spy,artemis,550,379,54,117,68.90909091,9.818181818,21.27272727
+malware,jiagu,530,375,44,111,70.75471698,8.301886792,20.94339623
+spy,spyagent,520,369,52,99,70.96153846,10,19.03846154
+malware,dowgin,510,357,47,106,70,9.215686275,20.78431373
+riskware,deng,500,349,54,97,69.8,10.8,19.4
+riskware,eldorado,500,345,49,106,69,9.8,21.2
+riskware,artemis,500,343,58,99,68.6,11.6,19.8
+riskware,jiagu,500,343,53,104,68.6,10.6,20.8
+addisplay,startapp,500,335,63,102,67,12.6,20.4
+addisplay,kuguo,500,367,46,87,73.4,9.2,17.4
+addisplay,cauly,500,347,48,105,69.4,9.6,21
+riskware,leadbolt,500,340,54,106,68,10.8,21.2
+riskware,nandrobox,500,359,41,100,71.8,8.2,20
+addisplay,dowgin,500,344,54,102,68.8,10.8,20.4
+addisplay,revmob,500,359,43,98,71.8,8.6,19.6
+riskware,dowgin,500,349,42,109,69.8,8.4,21.8
+riskware,kuguo,500,372,41,87,74.4,8.2,17.4
+riskware,smspay,500,366,33,101,73.2,6.6,20.2
+riskware,feiwo,500,348,51,101,69.6,10.2,20.2
+addisplay,appsgeyser,500,342,50,108,68.4,10,21.6
+addisplay,artemis,500,342,50,108,68.4,10,21.6
+addisplay,genpua,500,358,58,84,71.6,11.6,16.8
+smssend,artemis,450,293,50,107,65.11111111,11.11111111,23.77777778
+spyware,deng,440,316,34,90,71.81818182,7.727272727,20.45454545
+riskware,anroidosfictus,430,301,39,90,70,9.069767442,20.93023256
+exploit,pdfka,400,281,45,74,70.25,11.25,18.5
+adware++grayware++virus,dowgin,400,271,51,78,67.75,12.75,19.5
+riskware,ctxlli,400,283,39,78,70.75,9.75,19.5
+gray,appin,390,267,44,79,68.46153846,11.28205128,20.25641026
+rog,dowgin,390,284,38,68,72.82051282,9.743589744,17.43589744
+addisplay,commplat,380,261,30,89,68.68421053,7.894736842,23.42105263
+adsware,millennialmediaads,380,273,31,76,71.84210526,8.157894737,20
+riskware,tencentprotect,350,254,32,64,72.57142857,9.142857143,18.28571429
+hacktool,anydown,350,245,35,70,70,10,20
+riskware,gumen,350,247,37,66,70.57142857,10.57142857,18.85714286
+ransom++trojan,dcpvpa,350,238,33,79,68,9.428571429,22.57142857
+ransom++trojan,doqwkd,340,242,37,61,71.17647059,10.88235294,17.94117647
+malware,oddjs,340,238,43,59,70,12.64705882,17.35294118
+riskware,fakeind,320,209,30,81,65.3125,9.375,25.3125
+riskware,skymobi,310,213,38,59,68.70967742,12.25806452,19.03225806
+downloader,genpua,310,219,39,52,70.64516129,12.58064516,16.77419355
+adware++grayware++virus,tencentprotect,300,215,22,63,71.66666667,7.333333333,21
+adsware,inmobiads,290,197,44,49,67.93103448,15.17241379,16.89655172
+adsware,charboostads,260,182,24,54,70,9.230769231,20.76923077
+rog,mobcent,260,173,22,65,66.53846154,8.461538462,25
+riskware,waps,260,186,32,42,71.53846154,12.30769231,16.15384615
+rog,ads,250,171,28,51,68.4,11.2,20.4
+spy,genbl,240,171,23,46,71.25,9.583333333,19.16666667
+malware,fakeind,240,163,26,51,67.91666667,10.83333333,21.25
+trojandownloader,awnu,230,161,23,46,70,10,20
+rog,evilcert,230,163,25,42,70.86956522,10.86956522,18.26086957
+exploit,gingerbreak,220,162,20,38,73.63636364,9.090909091,17.27272727
+banker++trojan,dxshbq,220,154,24,42,70,10.90909091,19.09090909
+adsware,adwhirlads,220,157,13,50,71.36363636,5.909090909,22.72727273
+trj,stopsms,210,147,21,42,70,10,20
+fakeinst++trojan,artemis,210,150,17,43,71.42857143,8.095238095,20.47619048
+adsware,tapjoyads,210,140,31,39,66.66666667,14.76190476,18.57142857
+adsware,revmobads,200,143,16,41,71.5,8,20.5
+adsware,mobclixads,200,124,23,53,62,11.5,26.5
+downloader,tencentprotect,200,147,20,33,73.5,10,16.5
+downloader,hiddenapps,200,146,19,35,73,9.5,17.5
+smssend,dowgin,200,148,13,39,74,6.5,19.5
+downloader,dowgin,190,129,29,32,67.89473684,15.26315789,16.84210526
+addisplay,deng,180,131,19,30,72.77777778,10.55555556,16.66666667
+riskware,wiyun,180,130,13,37,72.22222222,7.222222222,20.55555556
+gray,jiagu,180,133,18,29,73.88888889,10,16.11111111
+smssend,minimob,170,121,15,34,71.17647059,8.823529412,20
+riskware,gxxqa,170,109,23,38,64.11764706,13.52941176,22.35294118
+monitor,spyagent,170,119,12,39,70,7.058823529,22.94117647
+backdoor,coogos,170,119,22,29,70,12.94117647,17.05882353
+malware,tencentprotect,170,113,21,36,66.47058824,12.35294118,21.17647059
+addisplay,feiwo,170,120,19,31,70.58823529,11.17647059,18.23529412
+malware,sdi,160,124,14,22,77.5,8.75,13.75
+riskware,droidkungfu,160,108,18,34,67.5,11.25,21.25
+dropper++trojan,jiagu,160,112,13,35,70,8.125,21.875
+riskware,umeng,150,106,11,33,70.66666667,7.333333333,22
+exploit,lotoor,150,116,10,24,77.33333333,6.666666667,16
+ransom++trojan,dyrlac,140,96,13,31,68.57142857,9.285714286,22.14285714
+gray,floatgame,130,90,8,32,69.23076923,6.153846154,24.61538462
+dropper++trojan,zhui,130,91,16,23,70,12.30769231,17.69230769
+riskware,autoins,130,83,18,29,63.84615385,13.84615385,22.30769231
+ransom++trojan,dcjebu,120,89,12,19,74.16666667,10,15.83333333
+riskware,gvuk,120,83,15,22,69.16666667,12.5,18.33333333
+riskware,koomer,120,85,15,20,70.83333333,12.5,16.66666667
+spyware,artemis,110,85,7,18,77.27272727,6.363636364,16.36363636
+riskware,ads,110,80,8,22,72.72727273,7.272727273,20
+riskware,airpush,110,76,12,22,69.09090909,10.90909091,20
+backdoor,ginmaster,110,72,7,31,65.45454545,6.363636364,28.18181818
+smssend,cimsci,110,73,11,26,66.36363636,10,23.63636364
+fakeinst++trojan,dytvup,110,79,9,22,71.81818182,8.181818182,20
+riskware,kyview,110,75,11,24,68.18181818,10,21.81818182
+trojandownloader,bbax,110,77,11,22,70,10,20
+trojan,steek,100,59,10,31,59,10,31
+trojan,appflood,100,71,12,17,71,12,17
+trojan,autoins,100,64,4,32,64,4,32
+trojan,djoy,100,72,11,17,72,11,17
+trojan,youmi,100,65,16,19,65,16,19
+trojan,dxajku,100,75,11,14,75,11,14
+trojan,dvqeyp,100,67,8,25,67,8,25
+trojan,ramnit,100,72,6,22,72,6,22
+spy,apptrack,100,72,8,20,72,8,20
+trojan,cimsci,100,66,13,21,66,13,21
+trojan,mcare,100,71,11,18,71,11,18
+trojan,cynevs,100,79,3,18,79,3,18
+trojan,smspay,100,74,12,14,74,12,14
+trojan,wiyun,100,77,8,15,77,8,15
+trojan,spyagent,100,78,5,17,78,5,17
+trojan,seaweth,100,66,11,23,66,11,23
+trojan,smforw,100,73,8,19,73,8,19
+trojan,dzzguu,100,75,4,21,75,4,21
+trojan,dytwli,100,77,11,12,77,11,12
+trojan,darrno,100,71,10,19,71,10,19
+trojan,eeiyqz,100,64,10,26,64,10,26
+trojan,cadouz,100,75,9,16,75,9,16
+trojan,hmad,100,68,9,23,68,9,23
+riskware,gxamh,100,76,14,10,76,14,10
+trojan,ganlet,100,76,11,13,76,11,13
+trojan,svpeng,100,73,12,15,73,12,15
+trojan,adpush,100,67,12,21,67,12,21
+trojan,mobcent,100,69,11,20,69,11,20
+trojan,bladabindi,100,68,9,23,68,9,23
+trojan,tgeneric,100,67,12,21,67,12,21
+trojan,nandrobox,100,73,9,18,73,9,18
+trojan,ashs,100,63,9,28,63,9,28
+trojan,hiddenapp,100,63,16,21,63,16,21
+trojan,dztaeb,100,62,10,28,62,10,28
+trojan,gpspy,100,65,11,24,65,11,24
+trojan,bestafera,100,64,8,28,64,8,28
+trojan,goldentouch,100,82,8,10,82,8,10
+trojan,ddlight,100,63,14,23,63,14,23
+trojan,cve,100,62,16,22,62,16,22
+trojan,leadbolt,100,65,13,22,65,13,22
+trojan,dzirog,100,68,10,22,68,10,22
+trojan,droidkungfu,100,70,13,17,70,13,17
+trojan,tscope,100,64,14,22,64,14,22
+trojan,pandaad,100,67,9,24,67,9,24
+trojan,stopsms,100,72,6,22,72,6,22
+trojan,hiddenapps,100,63,14,23,63,14,23
+trojan,hippo,100,60,13,27,60,13,27
+trojan,zitmo,100,75,6,19,75,6,19
+trojan,wapsx,100,75,6,19,75,6,19
+trojan,ackposts,100,71,11,18,71,11,18
+trojan,agentd,100,78,14,8,78,14,8
+trojan,fakeflash,100,66,8,26,66,8,26
+trojan,dpbibl,100,67,12,21,67,12,21
+trojan,cauly,100,68,9,23,68,9,23
+trojan,golddream,100,77,6,17,77,6,17
+trojan,drpxhi,100,68,11,21,68,11,21
+trojan,eenono,100,74,10,16,74,10,16
+trojan,fjcon,100,70,12,18,70,12,18
+trojan,dmizsp,100,65,13,22,65,13,22
+trojan,difxtg,100,72,9,19,72,9,19
+trojan,gxysm,100,75,5,20,75,5,20
+trojan,kyview,100,72,7,21,72,7,21
+trojan,dhxmub,100,68,7,25,68,7,25
+trojan,triada,100,66,12,22,66,12,22
+trojan,boqx,100,67,12,21,67,12,21
+trojan,boxer,100,73,11,16,73,11,16
+addisplay,qumi,100,75,3,22,75,3,22
+trojan,dembgv,100,75,10,15,75,10,15
+trojan,andcom,100,70,12,18,70,12,18
+monitor,deng,100,63,17,20,63,17,20
+trojan,dzlaen,100,69,10,21,69,10,21
+trojan,vdloader,100,71,7,22,71,7,22
+trojan,avagent,100,66,12,22,66,12,22
+adware++grayware++virus,inoco,100,74,7,19,74,7,19
+trojan,dilidi,100,68,8,24,68,8,24
+trojan,dowgin,100,66,17,17,66,17,17
+trojan,saiva,100,71,7,22,71,7,22
+trojan,waps,100,64,10,26,64,10,26
+trojan,cxqisx,100,70,12,18,70,12,18
+trojan,appin,100,71,10,19,71,10,19
+trojan,dytbgb,100,70,13,17,70,13,17
+trojan,appinventor,100,74,6,20,74,6,20
+trojan,uuserv,100,75,11,14,75,11,14
+trojan,andup,100,79,6,15,79,6,15
+trojan,deng,100,72,9,19,72,9,19
+trojan,dzwmry,100,77,10,13,77,10,13
+trojan,edurun,100,70,11,19,70,11,19
+trojan,edurqu,100,70,13,17,70,13,17
+trojan,dianru,100,68,11,21,68,11,21
+trojan,genpua,100,64,10,26,64,10,26
+trojan,dzbmci,100,62,13,25,62,13,25
+trojan,ginermaster,100,78,5,17,78,5,17
+trojan,asscpth,100,70,16,14,70,16,14
+trojan,joye,100,68,12,20,68,12,20
+trojan,roguesppush,100,75,10,15,75,10,15
+trojan,agentc,100,76,3,21,76,3,21
+trojan,viser,100,71,16,13,71,16,13
+trojan,opfake,100,69,10,21,69,10,21
+trojan,dguoqy,100,72,12,16,72,12,16
+trojan,adend,100,72,13,15,72,13,15
+trojan,dctvam,100,75,6,19,75,6,19
+trojan,iacgm,100,76,8,16,76,8,16
+trojan,dzgzcu,100,68,13,19,68,13,19
+trojan,dianle,100,70,11,19,70,11,19
+trojan,shixot,100,68,11,21,68,11,21
+trojan,secneo,100,75,10,15,75,10,15
+trojan,apptrack,100,76,6,18,76,6,18
+trojan,domob,100,68,12,20,68,12,20
+trojan,adwo,100,67,11,22,67,11,22
+trojan,gumen,100,72,6,22,72,6,22
+trojan,cnzz,100,67,14,19,67,14,19
+trojan,gingermaster,100,70,8,22,70,8,22
+trojan,fakeinstb,100,59,16,25,59,16,25
+trojan,cwzgis,100,73,10,17,73,10,17
+trojan,cussul,100,74,9,17,74,9,17
+trojan,spyset,100,76,7,17,76,7,17
+trojan,openconnection,100,69,6,25,69,6,25
+trojan,feiwo,100,72,10,18,72,10,18
+trojan,mobisec,100,75,8,17,75,8,17
+trojan,uten,100,74,7,19,74,7,19
+trojan,deviceadmin,100,72,6,22,72,6,22
+trojan,skymobi,100,59,13,28,59,13,28
+trojan,scamapp,100,69,12,19,69,12,19
+trojan,inmobi,100,66,13,21,66,13,21
+trojan,fatakr,100,66,12,22,66,12,22
+trojan,dyzrox,100,78,10,12,78,10,12
+trojan,edlqpq,100,68,12,20,68,12,20
+trojan,cyoanv,100,72,10,18,72,10,18
+trojan,revmob,100,68,10,22,68,10,22
+trojan,malapp,100,73,8,19,73,8,19
+trojan,ecfqay,100,67,14,19,67,14,19
+malware,smspay,100,65,10,25,65,10,25
+trojan,kuguo,100,70,10,20,70,10,20
+trojan,baiduprotect,100,72,8,20,72,8,20
+trojan,umeng,100,72,8,20,72,8,20
+trojan,dgqrfm,100,71,11,18,71,11,18
+trojan,buzztouch,100,74,12,14,74,12,14
+trojan,eftyqd,100,66,11,23,66,11,23
+trojan,appsgeyser,100,73,12,15,73,12,15
+trojan,morepaks,100,66,13,21,66,13,21
+trojan,hamob,100,77,7,16,77,7,16
+trojan,eefjsb,100,70,8,22,70,8,22
+trojan,koomer,100,70,12,18,70,12,18
+trojan,airpush,100,73,8,19,73,8,19
+trojan,pushad,100,72,6,22,72,6,22
+trojan,admogo,100,75,8,17,75,8,17
+trojan,monca,100,67,8,25,67,8,25
+trojan,asbol,100,71,6,23,71,6,23
+trojan,artemis,100,71,9,20,71,9,20
+trojan,fujacks,100,59,19,22,59,19,22
+trojan,adrd,100,68,7,25,68,7,25
+trojan,jiagu,100,65,7,28,65,7,28
+trojan,dxspgs,100,68,11,21,68,11,21
+trojan,cosha,100,74,6,20,74,6,20
+trojan,daomcd,100,66,9,25,66,9,25
+trojan,xinhua,100,67,8,25,67,8,25
+trojan,lotoor,100,70,11,19,70,11,19
+trojan,startapp,100,70,11,19,70,11,19
+trojan,goldeneagle,100,69,10,21,69,10,21
+trojan,dklygs,100,82,9,9,82,9,9
+trojan,genbl,100,67,9,24,67,9,24
+trojan,smsspy,100,65,15,20,65,15,20
+trojan,dianjin,100,75,7,18,75,7,18
+trojan,edurvj,100,71,9,20,71,9,20
+trojan,smsagent,100,65,11,24,65,11,24
+spy,cxsxzo,100,66,14,20,66,14,20
+trojan,wooboo,100,67,9,24,67,9,24
+trojan,basebridge,100,71,9,20,71,9,20
+trojan,edkalv,100,68,8,24,68,8,24
+riskware,gxxox,100,68,17,15,68,17,15
+trojan,ksapp,100,67,7,26,67,7,26
+trojan,igexin,100,65,13,22,65,13,22
+trojan,fakengry,100,81,5,14,81,5,14
+trojan,ginmaster,100,72,9,19,72,9,19
+trojan,droidrooter,100,76,9,15,76,9,15
+trojan,fictus,100,60,14,26,60,14,26
+trojan,eldorado,100,69,11,20,69,11,20
+trojan,tencentprotect,100,76,7,17,76,7,17
+trojan,jsmshider,100,68,13,19,68,13,19
+trojan,secapkpacker,100,72,6,22,72,6,22
+trojan,lockscreen,100,71,9,20,71,9,20
+trojan,spybubble,100,76,8,16,76,8,16
+trojan,plankton,100,65,12,23,65,12,23
+trojan,anydown,100,62,14,24,62,14,24
+trojan,commplat,100,67,10,23,67,10,23
+trojan,spyforw,100,69,14,17,69,14,17
+fakeinst++trojan,deng,90,62,10,18,68.88888889,11.11111111,20
+fakeinst++trojan,boxer,90,59,14,17,65.55555556,15.55555556,18.88888889
+backdoor,kuguo,90,68,8,14,75.55555556,8.888888889,15.55555556`;
+
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let rowsPerPage = 100;
+        let sortColumn = -1;
+        let sortDirection = 1;
+
+        // Parse CSV
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                return row;
+            });
+        }
+
+        // Populate table with pagination
+        function populateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = rowsPerPage === 'all' ? filteredData.length : start + parseInt(rowsPerPage);
+            const pageData = filteredData.slice(start, end);
+            
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.type}</td>
+                    <td>${row.family}</td>
+                    <td>${row.total_samples}</td>
+                    <td>${row.train_samples}</td>
+                    <td>${row.val_samples}</td>
+                    <td>${row.test_samples}</td>
+                    <td>${parseFloat(row.train_percentage).toFixed(1)}%</td>
+                    <td>${parseFloat(row.val_percentage).toFixed(1)}%</td>
+                    <td>${parseFloat(row.test_percentage).toFixed(1)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updatePaginationInfo();
+        }
+
+        // Update pagination info
+        function updatePaginationInfo() {
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = rowsPerPage === 'all' ? filteredData.length : Math.min(currentPage * rowsPerPage, filteredData.length);
+            const total = filteredData.length;
+            
+            document.getElementById('showingInfo').textContent = `${start}-${end} of ${total}`;
+            document.getElementById('currentPage').textContent = currentPage;
+            
+            const totalPages = rowsPerPage === 'all' ? 1 : Math.ceil(filteredData.length / rowsPerPage);
+            document.getElementById('totalPages').textContent = totalPages;
+            
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        }
+
+        // Change page
+        function changePage(direction) {
+            const totalPages = rowsPerPage === 'all' ? 1 : Math.ceil(filteredData.length / rowsPerPage);
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            populateTable();
+        }
+
+        // Change rows per page
+        function changeRowsPerPage() {
+            const select = document.getElementById('rowsPerPage');
+            rowsPerPage = select.value === 'all' ? 'all' : parseInt(select.value);
+            currentPage = 1;
+            populateTable();
+        }
+
+        // Populate type filter
+        function populateTypeFilter() {
+            const types = [...new Set(allData.map(row => row.type))].sort();
+            const typeFilter = document.getElementById('typeFilter');
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                typeFilter.appendChild(option);
+            });
+        }
+
+        // Filter data
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            filteredData = allData.filter(row => {
+                const matchesSearch = row.type.toLowerCase().includes(searchTerm) || 
+                                    row.family.toLowerCase().includes(searchTerm);
+                const matchesType = !typeFilter || row.type === typeFilter;
+                return matchesSearch && matchesType;
+            });
+
+            currentPage = 1;
+            
+            // Re-apply sort if active
+            if (sortColumn >= 0) {
+                applySortToFilteredData();
+            }
+            
+            populateTable();
+        }
+
+        // Apply sort to filtered data
+        function applySortToFilteredData() {
+            const columns = ['type', 'family', 'total_samples', 'train_samples', 'val_samples', 
+                           'test_samples', 'train_percentage', 'val_percentage', 'test_percentage'];
+            const column = columns[sortColumn];
+
+            filteredData.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                if (!isNaN(aVal) && !isNaN(bVal)) {
+                    aVal = parseFloat(aVal);
+                    bVal = parseFloat(bVal);
+                }
+
+                if (aVal < bVal) return -sortDirection;
+                if (aVal > bVal) return sortDirection;
+                return 0;
+            });
+        }
+
+        // Sort table
+        function sortTable(columnIndex) {
+            if (sortColumn === columnIndex) {
+                sortDirection *= -1;
+            } else {
+                sortDirection = 1;
+                sortColumn = columnIndex;
+            }
+
+            applySortToFilteredData();
+            
+            // Update sort indicators
+            document.querySelectorAll('th .sort-indicator').forEach((el, idx) => {
+                if (idx === columnIndex) {
+                    el.textContent = sortDirection === 1 ? '↑' : '↓';
+                } else {
+                    el.textContent = '';
+                }
+            });
+
+            populateTable();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = '';
+            sortColumn = -1;
+            sortDirection = 1;
+            document.querySelectorAll('th .sort-indicator').forEach(el => el.textContent = '');
+            filteredData = [...allData];
+            currentPage = 1;
+            populateTable();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            allData = parseCSV(datasetCSV);
+            filteredData = [...allData];
+            populateTable();
+            populateTypeFilter();
+
+            // Add event listeners
+            document.getElementById('searchInput').addEventListener('input', filterData);
+            document.getElementById('typeFilter').addEventListener('change', filterData);
+
+            // Smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
